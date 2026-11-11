@@ -1,0 +1,10 @@
+[
+  {
+    "id": "cube-erp-live",
+    "name": "YZ Cube Commerce Hub",
+    "environment": "live",
+    "partnerId": 1000000,
+    "partnerKey": "REPLACE_WITH_PRIVATE_LIVE_KEY",
+    "baseUrl": "https://partner.shopeemobile.cn"
+  }
+]

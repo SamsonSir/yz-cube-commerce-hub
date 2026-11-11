@@ -1,0 +1,30 @@
+node_modules/
+.next/
+dist/
+dist-test/
+.env
+.env.local
+.env.*.local
+.local/
+*.log
+.DS_Store
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+# Real shop evidence and standalone public deployment have their own lifecycle.
+output/
+specs/verification/
+deployment/github-pages/
+
+.playwright-cli/
+.team/
+*.pem
+*.key
+*.sql.gz
+
+.env.team
+
+# Live verification reports may contain business samples; keep them local.
+specs/shopee-*-verification-*.md
+specs/shopee-zsweet-live-data-check-*.md

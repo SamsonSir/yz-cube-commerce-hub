@@ -1,0 +1,33 @@
+{
+  "name": "@yz-cube/api",
+  "private": true,
+  "version": "0.3.0",
+  "scripts": {
+    "dev": "tsc -p tsconfig.json && node ../../scripts/api-dev.mjs",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node --env-file=../../.env.local dist/main.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "node --env-file=../../.env.local ../../scripts/prisma.mjs migrate deploy",
+    "test": "tsc -p tsconfig.test.json && node --env-file=../../.env.local --test dist-test/test/*.test.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.2.9",
+    "@nestjs/core": "11.2.9",
+    "@nestjs/platform-express": "11.2.9",
+    "@nestjs/schedule": "^6.1.0",
+    "@prisma/client": "6.19.3",
+    "cookie-parser": "1.4.7",
+    "dotenv": "^17.2.3",
+    "helmet": "^8.1.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
+    "@types/express": "^5.0.5",
+    "@types/node": "^22.19.0",
+    "prisma": "6.19.3",
+    "typescript": "5.9.3"
+  }
+}

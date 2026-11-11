@@ -1,0 +1,24 @@
+[Unit]
+Description=YZ Cube Commerce Hub Web
+After=network.target yz-commerce-api.service
+
+[Service]
+Type=simple
+User=yz-hub
+Group=yz-hub
+WorkingDirectory=/opt/yz-commerce/current/apps/console
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+Environment=PATH=/opt/yz-commerce/runtime/node-v22.22.2-linux-x64/bin:/usr/bin:/bin
+ExecStart=/opt/yz-commerce/runtime/node-v22.22.2-linux-x64/bin/node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3100
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/yz-commerce/current/apps/console/.next
+
+[Install]
+WantedBy=multi-user.target

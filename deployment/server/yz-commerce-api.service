@@ -1,0 +1,24 @@
+[Unit]
+Description=YZ Cube Commerce Hub API
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=yz-hub
+Group=yz-hub
+WorkingDirectory=/opt/yz-commerce/current/apps/api
+EnvironmentFile=/etc/yz-commerce/app.env
+Environment=PATH=/opt/yz-commerce/runtime/node-v22.22.2-linux-x64/bin:/usr/bin:/bin
+ExecStart=/opt/yz-commerce/runtime/node-v22.22.2-linux-x64/bin/node dist/main.js
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/yz-commerce
+
+[Install]
+WantedBy=multi-user.target

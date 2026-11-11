@@ -1,0 +1,72 @@
+openapi: 3.1.0
+info:
+  title: 颜值立方 (YZ GROUP) 跨境电商运营中台 Web API 契约
+  version: 0.2.0
+  description: >-
+    前后端同源 HTTP 契约草案（包含待验证字段标注）。金额统一采用十进制字符串 + currency 传输，
+    空值 (null) 与 0 严格区分，时间采用 ISO 8601 + marketTimezone 解释。
+servers:
+  - url: /api/v1
+paths:
+  /me:
+    get:
+      summary: 获取当前会话成员、组织、RBAC 角色与可见店铺范围
+      responses:
+        '200':
+          description: 当前登录成员上下文
+  /shops:
+    get:
+      summary: 获取授权范围内店铺列表及同步/Token健康状态 (04.01)
+  /capabilities:
+    get:
+      summary: 获取平台连接器数据能力四态台账 (04.02)
+  /dashboard:
+    get:
+      summary: 获取多店铺经营驾驶舱汇总 KPI、趋势与分店贡献表 (01.01)
+  /analytics/sales:
+    get:
+      summary: 获取净销售额瀑布拆解与按归属日回溯明细 (02.01)
+  /analytics/orders:
+    get:
+      summary: 获取订单与部分退款去重流水列表及单据溯源详情 (02.02)
+  /analytics/marketing-costs:
+    get:
+      summary: 获取三类营销费用（站内净消耗/代投Meta/达人佣金）及赠金抵扣状态 (02.03)
+  /analytics/reconciliation:
+    get:
+      summary: 获取财务与平台报表核对差异列表 (02.04)
+  /ads:
+    get:
+      summary: 获取正在投放的 Shopee 站内广告监控列表 (03.01)
+  /ads/{adId}:
+    get:
+      summary: 获取单条在投广告小时/30分钟快照趋势与关联 SKU 映射 (03.02)
+  /ad-rules:
+    get:
+      summary: 获取默认趋势规则与单计划自定义联合规则 (03.03)
+    put:
+      summary: 更新或创建单条广告自定义预警规则 (生成新版本号并记录审计日志)
+  /alert-events:
+    get:
+      summary: 获取预警待办与历史告警事件记录 (01.02 / 03.04)
+    patch:
+      summary: 认领或填写处置备注关闭预警事件
+  /sync-jobs:
+    get:
+      summary: 获取异步采集与补数任务列表 (05.01)
+    post:
+      summary: 触发手动重试或跨期补数任务 (返回 202 Accepted + taskId)
+  /metric-definitions:
+    get:
+      summary: 获取指标字典与数据质量巡检结果 (05.02)
+  /access/members:
+    get:
+      summary: 获取组织成员、角色与店铺数据范围配置 (06.01)
+  /notification-settings:
+    get:
+      summary: 获取站内信/飞书/邮件通知渠道与冷却配置 (06.02)
+    put:
+      summary: 保存通知渠道与静默策略配置
+  /audit-logs:
+    get:
+      summary: 获取脱敏业务参数变更与操作安全审计日志 (06.03)

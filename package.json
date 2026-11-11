@@ -1,0 +1,18 @@
+{
+  "name": "yz-cube-commerce-hub",
+  "version": "0.3.0",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev": "node scripts/team-dev.mjs",
+    "build": "pnpm --filter @yz-cube/api build && pnpm --filter @yz-cube/console build",
+    "typecheck": "pnpm --filter @yz-cube/api typecheck && pnpm --filter @yz-cube/console typecheck",
+    "test": "pnpm --filter @yz-cube/api test",
+    "verify:baseline": "node scripts/check-prototype-baseline.mjs",
+    "local:setup": "node scripts/local-setup.mjs",
+    "local:stop": "node scripts/local-stop.mjs",
+    "db:migrate": "pnpm --filter @yz-cube/api db:migrate",
+    "team:dev": "node scripts/team-dev.mjs",
+    "dev:standalone": "pnpm --parallel --filter @yz-cube/console --filter @yz-cube/api dev"
+  }
+}

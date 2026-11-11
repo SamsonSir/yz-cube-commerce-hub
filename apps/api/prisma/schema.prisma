@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  passwordHash String
+  role String @default("ADMIN")
+  sessions Session[]
+  grants DevelopmentGrant[]
+  createdAt DateTime @default(now())
+}
+model Session {
+  id String @id @default(cuid())
+  kind String @default("WEB")
+  tokenHash String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([expiresAt])
+}
+model AuthorizationAttempt {
+  id String @id @default(cuid())
+  stateHash String @unique
+  sessionId String
+  appId String
+  partnerId String
+  environment String
+  expiresAt DateTime
+  usedAt DateTime?
+  result String @default("PENDING")
+  createdAt DateTime @default(now())
+  @@index([expiresAt])
+}
+model ShopConnection {
+  grants DevelopmentGrant[]
+  id String @id @default(cuid())
+  appId String
+  partnerId String
+  environment String
+  shopId String
+  shopName String?
+  region String?
+  status String @default("CONNECTED")
+  accessTokenCipher String
+  refreshTokenCipher String
+  accessExpiresAt DateTime
+  authorizedAt DateTime @default(now())
+  verifiedAt DateTime?
+  refreshedAt DateTime?
+  lastError String?
+  refreshLeaseUntil DateTime?
+  tokenVersion Int @default(1)
+  updatedAt DateTime @updatedAt
+  @@unique([appId, shopId])
+  @@index([accessExpiresAt, status])
+}
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String
+  action String
+  target String
+  result String
+  createdAt DateTime @default(now())
+}
+
+model DevelopmentGrant {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionId String
+  connection ShopConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  tools String[]
+  @@unique([userId, connectionId])
+}
