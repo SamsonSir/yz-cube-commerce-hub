@@ -7,7 +7,7 @@ type Shop={id:string;shopId:string;shopName:string;region:string;status:string;t
 type Item={item_id:number;item_name?:string;item_status?:string;update_time?:number};
 export default function Developer(){
  const [email,setEmail]=useState(''),[shops,setShops]=useState<Shop[]>([]),[selected,setSelected]=useState(''),[items,setItems]=useState<Item[]>([]),[detail,setDetail]=useState<unknown>(),[error,setError]=useState(''),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[status,setStatus]=useState('NORMAL'),[offset,setOffset]=useState(0),[more,setMore]=useState(false),[nextOffset,setNextOffset]=useState(0),[history,setHistory]=useState<number[]>([]);
- useEffect(()=>{(async()=>{try{const me=await api<{email:string}>('/auth/me');setEmail(me.email);const s=await api<Shop[]>('/development/shops');setShops(s);setSelected(s[0]?.id||'');}catch(e){if((e as {status?:number}).status===401)window.location.replace('/login');else setError(errorMessage(e));}})();},[]);
+ useEffect(()=>{(async()=>{try{const me=await api<{email:string}>('/auth/me');setEmail(me.email);const s=await api<Shop[]>('/development/shops');setShops(s);const requested=new URLSearchParams(window.location.search).get('shop');setSelected(s.find(shop=>shop.id===requested)?.id||s[0]?.id||'');}catch(e){if((e as {status?:number}).status===401)window.location.replace('/login');else setError(errorMessage(e));}})();},[]);
  async function load(start=0,direction:'first'|'next'|'previous'='first'){if(!selected)return;setBusy(true);setError('');setDetail(undefined);setLoaded(false);try{
  const r=await api<{item?:Item[];has_next_page?:boolean;next_offset?:number}>(`/development/shops/${selected}/read/get_item_list?item_status=${status}&offset=${start}&page_size=20`);
  const rows=r.item||[];

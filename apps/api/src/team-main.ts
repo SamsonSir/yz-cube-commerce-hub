@@ -9,7 +9,7 @@ import type {Request,Response,NextFunction} from 'express';
 @Controller()
 class TeamLocalController {
  constructor(private team:TeamShopClient){}
- @Get('health') health(){return {ok:true,mode:'team-local'};}
+ @Get('health') health(){return {ok:true,mode:'team-local',managementOrigin:this.team.managementOrigin};}
  @Post('auth/login') async login(@Body() b:{email?:unknown;password?:unknown},@Res({passthrough:true}) res:Response){
   if(typeof b?.email!=='string'||b.email.length>254||typeof b.password!=='string'||b.password.length>256)throw new UnauthorizedException('请输入中台账号');
   const id=randomToken();await this.team.login(b.email,b.password,id);res.cookie('yz_team',id,{httpOnly:true,sameSite:'strict',path:'/',maxAge:28800000});return {ok:true,home:'/developer'};
