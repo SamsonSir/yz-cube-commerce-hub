@@ -26,15 +26,7 @@ export type ResearchProduct = {
   status: string;
   assessment?: Assessment;
 };
-export type ResearchDataset = {id: string; filename: string; period: Period; createdAt: string; total: number};
-export type ResearchPreview = {
-  previewId: string | null;
-  filename: string;
-  total: number;
-  rows: ResearchProduct[];
-  errors: {row: number; message: string}[];
-  warnings: {row: number; message: string}[];
-};
+export type ResearchDataset = {id: string; period: Period; total: number; archived?: boolean};
 export type ShopProfile = {
   shopId: string; shopName: string; region: string; currency: string; sampled: number;
   categories: {name: string; count: number}[]; brands: string[]; warnings: string[];
@@ -68,11 +60,7 @@ const draft = (id: string) => root + '/drafts/' + encodeURIComponent(id);
 const post = (body: unknown) => ({method: 'POST', body: JSON.stringify(body)});
 
 export const selectionApi = {
-  datasets: () => api<ResearchDataset[]>(root + '/datasets'),
-  preview: (file: File) => api<ResearchPreview>(root + '/imports/preview?' + new URLSearchParams({filename: file.name}), {
-    method: 'POST', headers: {'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}, body: file,
-  }),
-  confirm: (previewId: string, period: Period) => api<ResearchDataset>(root + '/imports', post({previewId, period})),
+  datasets: (linkedId?: string) => api<ResearchDataset[]>(root + '/datasets' + (linkedId ? '?' + new URLSearchParams({dataset: linkedId}) : '')),
   products: (id: string, query: URLSearchParams) => api<ProductPage>(dataset(id) + '/products?' + query),
   analyses: (id: string) => api<ResearchAnalysis[]>(dataset(id) + '/analyses'),
   shopProfile: (shopId: string) => api<ShopProfile>(root + '/shops/' + encodeURIComponent(shopId) + '/profile'),
@@ -97,16 +85,16 @@ export const criteriaText = (criteria?: Criteria) =>
   criteriaNames.filter(([key]) => criteria?.[key] !== undefined).map(([key, label, unit]) => label + criteria![key] + unit).join('，');
 
 export const periodNames: Record<PeriodType, string> = {day: '日榜', week: '周榜', month: '月榜'};
-export function dateAt(value: string) {
+function dateAt(value: string) {
   return new Date((value.length === 7 ? value + '-01' : value) + 'T00:00:00Z');
 }
-export function dayKey(date: Date) {
+function dayKey(date: Date) {
   return date.toISOString().slice(0, 10);
 }
-export function addDays(date: Date, days: number) {
+function addDays(date: Date, days: number) {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + days));
 }
-export function weekNumber(monday: Date) {
+function weekNumber(monday: Date) {
   const thursday = addDays(monday, 3);
   const yearStart = Date.UTC(thursday.getUTCFullYear(), 0, 1);
   return Math.floor((thursday.getTime() - yearStart) / (7 * 86400000)) + 1;

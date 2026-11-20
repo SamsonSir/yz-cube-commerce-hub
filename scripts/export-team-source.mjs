@@ -3,7 +3,7 @@ import {resolve,relative,basename} from 'node:path';
 import {spawnSync} from 'node:child_process';
 const root=resolve(import.meta.dirname,'..');mkdirSync(resolve(root,'output'),{recursive:true});const out=mkdtempSync(resolve(root,'output/team-development-source-'));
 const blocked=new Set(['node_modules','.next','dist','dist-test','.git','.local','.playwright-cli','output','verification']);
-for(const name of ['apps/api','apps/console','packages','scripts','docs','config','package.json','pnpm-lock.yaml','pnpm-workspace.yaml','.gitignore','.env.example','.env.team.example','README.md']){
+for(const name of ['apps/api','apps/console','fastmoss','packages','scripts','docs','config','package.json','pnpm-lock.yaml','pnpm-workspace.yaml','.gitignore','.env.example','.env.team.example','README.md']){
  const from=resolve(root,name);if(!existsSync(from))continue;
  cpSync(from,resolve(out,name),{recursive:true,filter:p=>!relative(from,p).split(/[\\/]/).some(x=>blocked.has(x))&&!/^(\.env(?:\.local|\.team)?|.*\.(?:log|tsbuildinfo|pem|key))$/.test(basename(p))});
 }

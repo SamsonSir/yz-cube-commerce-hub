@@ -1,5 +1,5 @@
 import {createHash, randomUUID} from 'node:crypto';
-import {mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync} from 'node:fs';
+import {mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 
 export function fingerprint(value: unknown) {
@@ -12,7 +12,7 @@ export function stableId(value: unknown) {
 }
 
 const idPattern = /^[a-f0-9-]{36}$/;
-type Bucket = 'previews' | 'datasets' | 'analyses' | 'origins';
+type Bucket = 'datasets' | 'analyses' | 'origins';
 
 export class SelectionStore {
   constructor(private readonly root: string) {}
@@ -40,20 +40,6 @@ export class SelectionStore {
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
       throw error;
-    }
-  }
-
-  prunePreviews(owner: string, cutoff: number) {
-    const directory = this.directory(owner, 'previews');
-    try {
-      for (const name of readdirSync(directory)) {
-        if (!name.endsWith('.json')) continue;
-        const file = join(directory, name);
-        const stat = statSync(file, {throwIfNoEntry: false});
-        if (stat?.isFile() && stat.mtimeMs < cutoff) rmSync(file, {force: true});
-      }
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
     }
   }
 

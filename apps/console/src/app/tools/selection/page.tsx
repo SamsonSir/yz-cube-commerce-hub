@@ -8,84 +8,11 @@ import {Button} from '@/components/ui/button';
 import {api, errorMessage} from '@/lib/api';
 import {localizationApi, marketNames, type MarketShop} from '@/lib/localization';
 import {criteriaText, metric, money, periodLabel, periodNames, referencePrice, selectionApi,
-  type AnalysisRequest, type Criteria, type Period, type ResearchAnalysis, type ShopProfile, type ResearchDataset, type ResearchPreview, type ResearchProduct} from '@/lib/selection';
-import {PeriodPicker} from './period-picker';
+  type AnalysisRequest, type Criteria, type ResearchAnalysis, type ShopProfile, type ResearchDataset, type ResearchProduct} from '@/lib/selection';
 import styles from './selection.module.css';
 
 const shortDate = new Intl.DateTimeFormat('zh-CN', {dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Kuala_Lumpur'});
 const percent = (value: number | null) => value === null ? '-' : metric(value) + '%';
-const samePeriod = (a: Period, b: Period) => a.type === b.type && a.value === b.value;
-
-function ImportDialog({onClose, onImport}: {onClose: () => void; onImport: (dataset: ResearchDataset) => void}) {
-  const [preview, setPreview] = useState<ResearchPreview | null>(null);
-  const [period, setPeriod] = useState<Period | null>(null);
-  const [busy, setBusy] = useState<'preview' | 'confirm' | ''>('');
-  const [error, setError] = useState('');
-
-  async function upload(file: File) {
-    setError('');
-    setPreview(null);
-    if (!/\.xlsx$/i.test(file.name) || file.size > 5 * 1024 * 1024) {
-      setError('请选择 5 MB 以内的 .xlsx 文件');
-      return;
-    }
-    setBusy('preview');
-    try { setPreview(await selectionApi.preview(file)); }
-    catch (error) { setError(errorMessage(error)); }
-    finally { setBusy(''); }
-  }
-
-  async function confirm() {
-    if (!preview?.previewId || !period || busy) return;
-    setBusy('confirm');
-    setError('');
-    try { onImport(await selectionApi.confirm(preview.previewId, period)); }
-    catch (error) { setError(errorMessage(error)); }
-    finally { setBusy(''); }
-  }
-
-  return <Dialog title="导入 FastMoss 销量榜" onClose={() => { if (busy !== 'confirm') onClose(); }}>
-    <form className={styles.dialogBody} onSubmit={event => {event.preventDefault(); void confirm();}}>
-      <label className={styles.field}><span>马来西亚 TikTok 销量榜 XLSX</span>
-        <input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" disabled={!!busy} onChange={event => {
-          const file = event.currentTarget.files?.[0];
-          if (file) void upload(file);
-        }}/>
-      </label>
-      {busy === 'preview' && <p role="status">正在读取榜单…</p>}
-      {error && <p className="message error" role="alert">{error}</p>}
-      {preview && <>
-        <div className={styles.reviewSummary}>
-          <strong>识别 {preview.total} 条商品</strong>
-          <span>{preview.errors.length} 行错误 · {preview.warnings.length} 行提示</span>
-        </div>
-        {preview.errors.length > 0 && <details open className={styles.issues}>
-          <summary>修正这些行，重新上传文件</summary>
-          <ul>{preview.errors.map(issue => <li key={issue.row}>第 {issue.row} 行 · {issue.message}</li>)}</ul>
-        </details>}
-        {preview.warnings.length > 0 && <details className={styles.issues}>
-          <summary>查看缺失字段</summary>
-          <ul>{preview.warnings.map(issue => <li key={issue.row}>第 {issue.row} 行 · {issue.message}</li>)}</ul>
-        </details>}
-        <div className={styles.previewTable}><table>
-          <thead><tr><th scope="col">商品</th><th scope="col">商品 ID</th><th scope="col">售价</th><th scope="col">销量</th></tr></thead>
-          <tbody>{preview.rows.map(row => <tr key={row.productId}>
-            <td>{row.title}</td><td className="mono">{row.productId}</td><td>{referencePrice(row.price)}</td><td>{metric(row.units)}</td>
-          </tr>)}</tbody>
-        </table></div>
-        {preview.previewId && <div className={styles.dateField}>
-          <strong>统计日期</strong>
-          <p className="muted">请选择导出时在 FastMoss 使用的日期。</p>
-          <PeriodPicker value={period} onChange={setPeriod}/>
-        </div>}
-      </>}
-      <div className={styles.actions}>
-        <Button type="button" variant="outline" disabled={busy === 'confirm'} onClick={onClose}>取消</Button>
-        <Button type="submit" disabled={!!busy || !preview?.previewId || !period}>{busy === 'confirm' ? '正在导入…' : '确认导入'}</Button>
-      </div>
-    </form>
-  </Dialog>;
-}
 
 function ProductDetails({row, onClose}: {row: ResearchProduct; onClose: () => void}) {
   const data = [
@@ -315,11 +242,11 @@ function DatasetTable({dataset}: {dataset: ResearchDataset}) {
 
   const hasPage = table && table.total > table.pageSize;
   return <>
-    <section className={`card ${styles.tableCard}`} aria-label="销量榜">
+    <section className="card" aria-label="销量榜">
       <div className={styles.tableHeader}>
         <div>
           <h2>{periodNames[dataset.period.type]} · {periodLabel(dataset.period)}</h2>
-          <p className="muted">{dataset.filename} · {dataset.total} 款商品</p>
+          <p className="muted">{dataset.total} 款商品</p>
         </div>
         <Button disabled={loading || !table?.matched || running} onClick={() => setAnalysisOpen(true)}>AI 分析</Button>
       </div>
@@ -365,7 +292,7 @@ function DatasetTable({dataset}: {dataset: ResearchDataset}) {
       {analysisError && <p className={`message error ${styles.tableMessage}`} role="alert">{analysisError}</p>}
       {productsError && <div className={`message error ${styles.tableMessage}`} role="alert">{productsError} <button className={styles.textButton} onClick={() => setReload(value => value + 1)}>重试</button></div>}
       {!table && !productsError && <p className="empty" role="status">正在加载榜单…</p>}
-      {table && <div className={styles.tableScroll} role="region" aria-label="已导入商品" tabIndex={0} aria-busy={loading}>
+      {table && <div className={styles.tableScroll} role="region" aria-label="榜单商品" tabIndex={0} aria-busy={loading}>
         <table className={styles.productsTable}>
           <colgroup>{['rankColumn', 'productColumn', 'shopColumn', 'priceColumn', 'unitsColumn', 'growthColumn', 'revenueColumn', 'totalColumn', 'scoreColumn', 'actionColumn'].map(column =>
             <col key={column} className={styles[column]}/>)}</colgroup>
@@ -416,18 +343,15 @@ export default function SelectionPage() {
   const [email, setEmail] = useState('');
   const [datasets, setDatasets] = useState<ResearchDataset[]>();
   const [loadError, setLoadError] = useState('');
-  const [importOpen, setImportOpen] = useState(false);
-  const [period, setPeriod] = useState<Period | null>(null);
   const [selection, setSelection] = useState('');
-  const available = datasets?.filter(dataset => !period || samePeriod(period, dataset.period)) ?? [];
-  const dataset = available.find(dataset => dataset.id === selection) ?? available[0];
+  const dataset = datasets?.find(item => item.id === selection) ?? datasets?.[0];
 
-  async function refresh() {
+  async function refresh(linkedId?: string) {
     setLoadError('');
     try {
-      const [me, batches] = await Promise.all([api<{email: string}>('/auth/me'), selectionApi.datasets()]);
+      const [me, rankings] = await Promise.all([api<{email: string}>('/auth/me'), selectionApi.datasets(linkedId)]);
       setEmail(me.email);
-      setDatasets(batches);
+      setDatasets(rankings);
     } catch (error) {
       if ((error as {status?: number}).status === 401) window.location.assign('/login');
       else setLoadError(errorMessage(error));
@@ -435,40 +359,23 @@ export default function SelectionPage() {
   }
 
   useEffect(() => {
-    const fromDraft = new URLSearchParams(window.location.search).get('dataset');
-    if (fromDraft) setSelection(fromDraft);
-    void refresh();
+    const linkedId = new URLSearchParams(window.location.search).get('dataset') ?? '';
+    setSelection(linkedId);
+    void refresh(linkedId);
   }, []);
 
   return <Shell active="selection" email={email}>
     <div className={styles.workspace}>
       <section className={`card ${styles.heading}`}>
         <div><h1>市场调研</h1><p className="muted">FastMoss · TikTok Shop 马来西亚销量榜</p></div>
-        <Button onClick={() => setImportOpen(true)}>导入 XLSX</Button>
+        {!!datasets?.length && <div className={styles.periodTypes} role="group" aria-label="切换榜单">
+          {datasets.map(item => <button key={item.id} type="button" aria-pressed={dataset?.id === item.id}
+            onClick={() => setSelection(item.id)}>{item.archived ? '历史榜单' : periodNames[item.period.type]}</button>)}
+        </div>}
       </section>
-      {loadError && <p className="message error" role="alert">{loadError} <button className={styles.textButton} onClick={() => void refresh()}>重试</button></p>}
-      {!datasets && !loadError && <section className="card empty" role="status">正在读取已导入的榜单…</section>}
-      {!!datasets?.length && <section className={`card ${styles.datasetControls}`} aria-label="榜单日期与批次">
-        <div className={styles.dateField}>
-          <strong>统计日期</strong>
-          <PeriodPicker value={period} onChange={setPeriod} clearable/>
-        </div>
-        <label className={styles.field}><span>已导入榜单</span>
-          <select value={dataset?.id ?? ''} onChange={event => setSelection(event.target.value)} disabled={!available.length}>
-            {!available.length && <option value="">没有对应榜单</option>}
-            {available.map(item => <option key={item.id} value={item.id}>{periodNames[item.period.type]} · {periodLabel(item.period)} · {item.filename}</option>)}
-          </select>
-        </label>
-      </section>}
-      {dataset ? <DatasetTable key={dataset.id} dataset={dataset}/> : datasets && <section className={`card ${styles.empty}`}>
-        <h2>{period ? '此日期还没有导入榜单' : '还没有导入榜单'}</h2>
-        <p className="muted">从 FastMoss 导入马来西亚销量榜，开始筛选商品。</p>
-        <Button variant="outline" onClick={() => setImportOpen(true)}>导入销量榜</Button>
-      </section>}
+      {loadError && <p className="message error" role="alert">{loadError} <button className={styles.textButton} onClick={() => void refresh(selection)}>重试</button></p>}
+      {!datasets && !loadError && <section className="card empty" role="status">正在读取 FastMoss 榜单…</section>}
+      {dataset ? <DatasetTable key={dataset.id} dataset={dataset}/> : datasets && <section className="card empty">暂无榜单</section>}
     </div>
-    {importOpen && <ImportDialog onClose={() => setImportOpen(false)} onImport={next => {
-      setDatasets(items => [next, ...(items ?? []).filter(item => item.id !== next.id)]);
-      setSelection(next.id); setPeriod(next.period); setImportOpen(false);
-    }}/>}
   </Shell>;
 }
